@@ -1,7 +1,14 @@
 pipeline {
 	environment {
-		IMAGE_NAME = "alipnehelloworld"
+		APP_NAME = "Elie"
+		ID_DOCKER = "dockerd452"
+		IMAGE_NAME = "alpinehelloworld"
 		IMAGE_TAG = "latest"
+		PORT_EXPOSED = "80"
+		INTERNAL_PORT = "5000"
+		STG_API_ENDPOINT = "192.168.56.9:1993"
+       	STG_APP_ENDPOINT = "192.168.56.9:80"
+       	CONTAINER_IMAGE = "${ID_DOCKER}/${IMAGE_NAME}:${IMAGE_TAG}"
 	}
 	agent none
 	stages {
@@ -9,7 +16,7 @@ pipeline {
 			agent any
 			steps {
 				script {
-					sh 'docker build -t dockerd452/$IMAGE_NAME:$IMAGE_TAG .'
+					sh 'docker build -t $ID_DOCKER/$IMAGE_NAME:$IMAGE_TAG .'
 				}
 			}
 		}
@@ -18,7 +25,7 @@ pipeline {
 			steps {
 				script {
 					sh '''
-						docker run --name $IMAGE_NAME -d -p 80:5000 -e PORT=5000 dockerd452/$IMAGE_NAME:$IMAGE_TAG
+						docker run --name $IMAGE_NAME -d -p $PORT_EXPOSED:$INTERNAL_PORT -e PORT=$INTERNAL_PORT $ID_DOCKER/$IMAGE_NAME:$IMAGE_TAG
 						sleep 5
 					'''
 				}
@@ -46,5 +53,35 @@ pipeline {
 				}
 			}
 		}
+
+		stage ('Login and Push Image on docker hub') {
+          agent any
+        	environment {
+           		DOCKERHUB_PASSWORD  = credentials('dockerhub-credentials')
+        	}            
+          	steps {
+            	script {
+               		sh '''
+                		echo $DOCKERHUB_PASSWORD_PSW | docker login -u $ID_DOCKER --password-stdin
+                    	docker push ${ID_DOCKER}/$IMAGE_NAME:$IMAGE_TAG
+               		'''
+             	}
+          	}
+      	}
+
+      	stage('STAGING - Deploy app') {
+       		when {
+        		expression { GIT_BRANCH == 'origin/master' }
+        	}
+      		agent any
+
+      		steps {
+        		script {
+            		sh '''
+               			curl -X POST http://${STG_API_ENDPOINT}/staging -H 'Content-Type: application/json' -d '{"your_name":"${APP_NAME}","container_image":"${CONTAINER_IMAGE}", "external_port":"${EXTERNAL_PORT}", "internal_port":"${INTERNAL_PORT}"}'
+               		'''
+        		}
+        	}
+     	} 
 	}
 }
