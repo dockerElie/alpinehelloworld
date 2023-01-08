@@ -7,7 +7,6 @@ pipeline {
         PORT_EXPOSED = "80"
         INTERNAL_PORT = "5000"
         STG_API_ENDPOINT = "192.168.56.9:1993"
-        STG_APP_ENDPOINT = "192.168.56.9:80"
         CONTAINER_IMAGE = "${ID_DOCKER}/${IMAGE_NAME}:${IMAGE_TAG}"
 
      }
@@ -80,7 +79,7 @@ pipeline {
       steps {
           script {
             sh """
-               curl -X POST http://${PROD_API_ENDPOINT}/prod -H 'Content-Type: application/json' -d '{"your_name":"${APP_NAME}","container_image":"${CONTAINER_IMAGE}", "external_port":"${EXTERNAL_PORT}", "internal_port":"${INTERNAL_PORT}"}'
+               curl -X POST http://${STG_API_ENDPOINT}/prod -H 'Content-Type: application/json' -d '{"your_name":"${APP_NAME}","container_image":"${CONTAINER_IMAGE}", "external_port":"${EXTERNAL_PORT}", "internal_port":"${INTERNAL_PORT}"}'
                """
           }
         }
