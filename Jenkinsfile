@@ -85,15 +85,15 @@ pipeline {
         		}
         	}
      	}
-
-     	post {
-       		success {
-         		slackSend (color: '#00FF00', message: "ULRICH - SUCCESSFUL: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL}) - STAGING URL => http://${STG_APP_ENDPOINT}")
-         	}
-      		failure {
-            	slackSend (color: '#FF0000', message: "ULRICH - FAILED: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
-          	}   
-    	} 
 	}
+
+	post {
+       	success {
+         	slackSend (color: '#00FF00', message: "ULRICH - SUCCESSFUL: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL}) - STAGING URL => http://${STG_APP_ENDPOINT}")
+        }
+      	failure {
+            slackSend (color: '#FF0000', message: "ULRICH - FAILED: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
+        }   
+    } 
 }
              
