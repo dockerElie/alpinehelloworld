@@ -7,6 +7,7 @@ pipeline {
 		PORT_EXPOSED = "80"
 		INTERNAL_PORT = "5000"
 		STG_API_ENDPOINT = "192.168.56.9:1993"
+		STG_APP_ENDPOINT = "192.168.56.9:80"
        	CONTAINER_IMAGE = "${ID_DOCKER}/${IMAGE_NAME}:${IMAGE_TAG}"
 	}
 	agent none
@@ -83,7 +84,16 @@ pipeline {
                		"""
         		}
         	}
-     	} 
+     	}
+
+     	post {
+       		success {
+         		slackSend (color: '#00FF00', message: "ULRICH - SUCCESSFUL: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL}) - STAGING URL => http://${STG_APP_ENDPOINT}")
+         	}
+      		failure {
+            	slackSend (color: '#FF0000', message: "ULRICH - FAILED: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
+          	}   
+    	} 
 	}
 }
              
